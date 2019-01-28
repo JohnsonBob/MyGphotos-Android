@@ -1,0 +1,87 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.jakewharton.butterknife'
+def dbflow_version = "4.2.1"
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        applicationId "io.gphotos.gin"
+        minSdkVersion 21
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi' , 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    //指定jdk版本
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    //noinspection GradleCompatible
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha01'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    //noinspection GradleCompatible
+    implementation 'androidx.recyclerview:recyclerview:1.1.0-alpha01'
+    implementation 'com.squareup.picasso:picasso:2+'
+    implementation 'io.reactivex.rxjava2:rxjava:2+'
+    implementation 'io.reactivex.rxjava2:rxandroid:2+'
+    implementation 'com.jaeger.statusbarutil:library:1.5.1'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.jakewharton:butterknife:10.0.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:10.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'org.xutils:xutils:3.5.0'
+    implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-andx-1'
+    implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-andx-1'
+    implementation 'org.greenrobot:eventbus:3.1.1'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+	implementation("com.squareup.okhttp3:okhttp:3.12.1")
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.12.1'
+	implementation 'com.github.GrenderG:Toasty:1.4.0'
+	implementation 'br.com.simplepass:loading-button-android:1.14.0'
+	debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
+	
+	releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
+	// Optional, if you use support library fragments:
+	debugImplementation 'com.squareup.leakcanary:leakcanary-support-fragment:1.6.3'
+	
+	implementation 'com.github.bumptech.glide:glide:4.8.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+//	implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0' // 必要retrofit依赖
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation files('libs/apache-commons-sanselan.jar')
+    /*annotationProcessor "com.github.agrosner.dbflow:processor:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:lib:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:sqlcipher:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:paging:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:core:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:reactive-streams:5.0.0-alpha1"
+    implementation "com.github.agrosner.dbflow:contentprovider:5.0.0-alpha1"*/
+    annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    implementation "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    implementation "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
+    // sql-cipher database encyrption (optional)
+    implementation "com.github.Raizlabs.DBFlow:dbflow-sqlcipher:${dbflow_version}"
+    implementation 'com.tencent:mmkv:1.0.17'
+    implementation 'com.tencent.bugly:crashreport:latest.release' //其中latest.release指代最新Bugly SDK版本号，也可以指定明确的版本号，例如2.1.9
+    implementation 'com.tencent.bugly:nativecrashreport:latest.release' //其中latest.release指代最新Bugly NDK版本号，也可以指定明确的版本号，例如3.0
+    compile 'com.github.Shashank02051997:FancyToast-Android:0.1.3'
+}

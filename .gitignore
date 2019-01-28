@@ -1,0 +1,9 @@
+.DS_Store
+*.log
+.git/
+.gradle/
+.idea/
+app/build/
+photoview/build/
+app/app.iml
+photoview/photoview.iml
