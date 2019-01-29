@@ -20,7 +20,7 @@ import butterknife.internal.Utils;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import io.gphotos.gin.Database.ImageModel;
-import io.gphotos.gin.R;
+import io.gphotos.gins.R;
 import io.gphotos.gin.framework.GlideApp;
 import io.gphotos.gin.manager.UploadManager;
 import java.io.File;

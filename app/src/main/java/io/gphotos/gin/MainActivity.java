@@ -27,6 +27,7 @@ import io.gphotos.gin.ui.SplashActivity;
 import io.gphotos.gin.ui.adapter.MainViewPagerAdapter;
 import io.gphotos.gin.util.SPUtil;
 import io.gphotos.gin.util.TUtil;
+import io.gphotos.gins.R;
 
 import org.apache.sanselan.formats.jpeg.iptc.IPTCConstants;
 import org.greenrobot.eventbus.EventBus;
@@ -49,7 +50,7 @@ public class MainActivity extends BaseCompatActivity {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         getWindow().requestFeature(8);
-        getSupportActionBar().hide();
+//        getSupportActionBar().hide();
         getWindow().addFlags(128);
         setContentView((int) R.layout.activity_main);
         ButterKnife.bind((Activity) this);

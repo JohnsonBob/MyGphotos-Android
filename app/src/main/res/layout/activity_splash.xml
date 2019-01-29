@@ -1,14 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:aapt="http://schemas.android.com/aapt" android:layout_width="match_parent" android:layout_height="match_parent">
-    <TextView android:textColor="@color/colorPrimary" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="16dp" android:text="Powered by Gphotos 2018" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
-    <RelativeLayout android:id="@+id/rlLogin" android:background="@color/colorWhite" android:visibility="invisible" android:layout_width="match_parent" android:layout_height="match_parent">
-        <LinearLayout android:orientation="vertical" android:paddingLeft="32dp" android:paddingRight="32dp" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="40dp">
-            <ImageView android:layout_gravity="center_horizontal" android:background="@drawable/logo_splash" android:layout_width="120dp" android:layout_height="134dp"/>
-            <EditText android:id="@+id/etMobile" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="40dp" android:hint="摄影师账号" android:singleLine="true" android:imeOptions="actionNext"/>
-            <EditText android:id="@+id/etCode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:hint="登录密码" android:singleLine="true" android:inputType="textPassword" android:imeOptions="actionDone"/>
-            <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton android:textColor="@color/colorWhite" android:layout_gravity="center_horizontal" android:id="@+id/btnLogin2" android:background="@color/colorBlueLight" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="登录" app:spinning_bar_color="@color/colorBlue"/>
-            <TextView android:layout_gravity="center_horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="摄影师账户需要影像机构为您开通"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:text="Powered by Gphotos 2018"
+        android:textColor="@color/colorPrimary" />
+
+    <RelativeLayout
+        android:id="@+id/rlLogin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorWhite"
+        android:visibility="invisible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:orientation="vertical"
+            android:paddingLeft="32dp"
+            android:paddingRight="32dp">
+
+            <ImageView
+                android:layout_width="120dp"
+                android:layout_height="134dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/logo_splash" />
+
+            <EditText
+                android:id="@+id/etMobile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:hint="摄影师账号"
+                android:imeOptions="actionNext"
+                android:singleLine="true" />
+
+            <EditText
+                android:id="@+id/etCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="登录密码"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:singleLine="true" />
+
+            <br.com.simplepass.loading_button_lib.customViews.CircularProgressButton
+                android:id="@+id/btnLogin2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:background="@color/colorBlueLight"
+                android:text="登录"
+                android:textColor="@color/colorWhite"
+                app:spinning_bar_color="@color/colorBlue" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:text="摄影师账户需要影像机构为您开通" />
         </LinearLayout>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="16dp" android:text="Powered by Gphotos 2018" android:layout_alignParentBottom="true" android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="16dp"
+            android:text="Powered by Gphotos 2018" />
     </RelativeLayout>
 </RelativeLayout>

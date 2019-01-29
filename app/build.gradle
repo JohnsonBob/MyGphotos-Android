@@ -5,7 +5,7 @@ def dbflow_version = "4.2.1"
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "io.gphotos.gin"
+        applicationId "io.gphotos.gins"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
@@ -68,13 +68,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.3.0' // 必要retrofit依赖
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation files('libs/apache-commons-sanselan.jar')
-    /*annotationProcessor "com.github.agrosner.dbflow:processor:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:lib:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:sqlcipher:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:paging:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:core:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:reactive-streams:5.0.0-alpha1"
-    implementation "com.github.agrosner.dbflow:contentprovider:5.0.0-alpha1"*/
+
     annotationProcessor "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
     implementation "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
     implementation "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"

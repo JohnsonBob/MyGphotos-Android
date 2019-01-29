@@ -20,7 +20,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnCheckedChanged;
 import butterknife.OnClick;
-import io.gphotos.gin.R;
+import io.gphotos.gins.R;
 import io.gphotos.gin.manager.AccountManager;
 import io.gphotos.gin.manager.UploadManager;
 import io.gphotos.gin.service.GinCameraService;

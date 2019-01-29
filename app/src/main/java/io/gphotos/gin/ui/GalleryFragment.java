@@ -25,7 +25,7 @@ import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 import io.gphotos.gin.Database.ImageModel;
 import io.gphotos.gin.Database.ImageModel_Table;
-import io.gphotos.gin.R;
+import io.gphotos.gins.R;
 import io.gphotos.gin.event.StatusEvent;
 import io.gphotos.gin.framework.BaseFragment;
 import io.gphotos.gin.manager.UploadManager;

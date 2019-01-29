@@ -3,7 +3,11 @@ package io.gphotos.gin.manager;
 import android.content.Intent;
 import android.util.Log;
 import android.util.SparseIntArray;
+
+import com.raizlabs.android.dbflow.config.FlowManager;
+import com.raizlabs.android.dbflow.sql.language.From;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
 import io.gphotos.gin.Database.ImageModel;
 import io.gphotos.gin.GinApplication;
@@ -43,7 +47,12 @@ public class UploadManager {
         if (this.imageModelList == null) {
             this.imageModelList = new CopyOnWriteArrayList();
         }
-        Collection<ImageModel> queryList = SQLite.select(new IProperty[0]).from(ImageModel.class).queryList();
+        IProperty[] iProperties = new IProperty[0];
+        Collection<ImageModel> queryList = null;
+        Select select = SQLite.select(iProperties);
+        From<ImageModel> from = select.from(ImageModel.class);
+        queryList = from.queryList();
+
         for (ImageModel imageModel : queryList) {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(imageModel.name);

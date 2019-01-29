@@ -14,7 +14,7 @@ import org.greenrobot.eventbus.EventBus;
 
 public class PhoneUtil {
     public static void checkConnection(Context context) {
-        NetworkInfo activeNetworkInfo = ((ConnectivityManager) context.getSystemService("connectivity")).getActiveNetworkInfo();
+        NetworkInfo activeNetworkInfo = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (activeNetworkInfo == null) {
             EventBus.getDefault().post(new StatusEvent(6, "无网络"));
             return;
@@ -33,7 +33,7 @@ public class PhoneUtil {
     }
 
     public static int getScreenWidth(Context context) {
-        WindowManager windowManager = (WindowManager) context.getSystemService("window");
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.widthPixels;

@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.gphotos.gin.R;
+import io.gphotos.gins.R;
 import io.gphotos.gin.event.StatusEvent;
 import io.gphotos.gin.event.UploadEvent;
 import io.gphotos.gin.framework.BaseFragment;

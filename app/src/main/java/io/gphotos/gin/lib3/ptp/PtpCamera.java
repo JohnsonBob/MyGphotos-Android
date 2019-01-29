@@ -3,9 +3,7 @@ package io.gphotos.gin.lib3.ptp;
 import android.graphics.Bitmap;
 import android.hardware.usb.UsbRequest;
 import android.os.Handler;
-import androidx.core.os.EnvironmentCompat;
 import android.util.Log;
-import com.raizlabs.android.dbflow.sql.language.Operator.Operation;
 
 import io.gphotos.gin.lib3.ptp.commands.CloseSessionCommand;
 import io.gphotos.gin.lib3.ptp.commands.Command;
@@ -22,6 +20,7 @@ import io.gphotos.gin.lib3.ptp.commands.SetDevicePropValueCommand;
 import io.gphotos.gin.lib3.ptp.model.DeviceInfo;
 import io.gphotos.gin.lib3.ptp.model.DevicePropDesc;
 import io.gphotos.gin.lib3.ptp.model.LiveViewData;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,37 +32,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public abstract class PtpCamera implements Camera {
-    private static final String TAG = "PtpCamera";
-    protected boolean autoFocusSupported;
-    protected boolean bulbSupported;
-    protected boolean cameraIsCapturing;
-    private final PtpUsbConnection connection;
-    protected DeviceInfo deviceInfo;
-    protected boolean driveLensSupported;
-    protected final Handler handler = new Handler();
-    protected boolean histogramSupported;
-    protected CameraListener listener;
-    protected boolean liveViewAfAreaSupported;
-    protected boolean liveViewOpen;
-    protected boolean liveViewSupported;
-    private int pictureSampleSize;
-    protected final int productId;
-    protected final Map<Integer, Integer> properties = new HashMap();
-    private final Map<Integer, int[]> propertyDescriptions = new HashMap();
-    protected final Set<Integer> ptpInternalProperties = new HashSet();
-    protected final Map<Integer, Integer> ptpProperties = new HashMap();
-    protected final Map<Integer, DevicePropDesc> ptpPropertyDesc = new HashMap();
-    protected final Map<Integer, Integer> ptpToVirtualProperty = new HashMap();
-    protected final LinkedBlockingQueue<PtpAction> queue = new LinkedBlockingQueue();
-    protected State state;
-    private int transactionId;
-    private final int vendorId;
-    protected final Map<Integer, Integer> virtualToPtpProperty = new HashMap();
-    private WorkerListener workerListener;
-    private final WorkerThread workerThread = new WorkerThread(this, null);
-
     public interface IO {
         void handleCommand(Command command);
     }
@@ -76,7 +47,7 @@ public abstract class PtpCamera implements Camera {
         Error
     }
 
-    private class WorkerThread extends Thread implements IO {
+    class WorkerThread extends Thread implements IO {
         private ByteBuffer bigIn1;
         private ByteBuffer bigIn2;
         private ByteBuffer bigIn3;
@@ -92,28 +63,24 @@ public abstract class PtpCamera implements Camera {
         private ByteBuffer smallIn;
         public boolean stop;
 
-        private WorkerThread() {
-            this.bigInSize = 16384;
-            this.fullInSize = 16384;
+        WorkerThread(PtpCamera arg1, io.gphotos.gin.lib3.ptp.PtpCamera arg2) {
+            this(arg1);
         }
 
-        //这里错误
-        WorkerThread(PtpCamera ptpCamera, PtpCamera anonymousClass1) {
-            this();
+        private WorkerThread(PtpCamera ptpCamera1) {
+
+            this.bigInSize = 0x4000;
+            this.fullInSize = 0x4000;
         }
 
 
-        public void run() {
-
-            throw new UnsupportedOperationException("Method not decompiled: io.gphotos.gin.lib3.ptp.PtpCamera.WorkerThread.run():void");
-        }
 
         public void handleCommand(Command command) {
-            String access$500 = PtpCamera.TAG;
+            String tag = PtpCamera.TAG;
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("handling command ");
             stringBuilder.append(command.getClass().getSimpleName());
-            Log.i(access$500, stringBuilder.toString());
+            Log.i(tag, stringBuilder.toString());
             ByteBuffer byteBuffer = this.smallIn;
             byteBuffer.position(0);
             command.encodeCommand(byteBuffer);
@@ -211,142 +178,414 @@ public abstract class PtpCamera implements Camera {
             }
         }
 
-        private void notifyWorkStarted() {
-            WorkerListener access$600 = PtpCamera.this.workerListener;
-            if (access$600 != null) {
-                access$600.onWorkerStarted();
-            }
-        }
-
         private void notifyWorkEnded() {
-            WorkerListener access$600 = PtpCamera.this.workerListener;
-            if (access$600 != null) {
-                access$600.onWorkerEnded();
+            WorkerListener v0 = PtpCamera.this.workerListener;
+            if (v0 != null) {
+                v0.onWorkerEnded();
             }
+        }
+
+        private void notifyWorkStarted() {
+            WorkerListener v0 = PtpCamera.this.workerListener;
+            if (v0 != null) {
+                v0.onWorkerStarted();
+            }
+        }
+
+        public void run() {
+            Object v0_1 = null;
+            this.notifyWorkStarted();
+            this.maxPacketOutSize = PtpCamera.this.connection.getMaxPacketOutSize();
+            this.maxPacketInSize = PtpCamera.this.connection.getMaxPacketInSize();
+            if (this.maxPacketOutSize > 0) {
+                int v3 = 65535;
+                if (this.maxPacketOutSize > v3) {
+                } else {
+                    if (this.maxPacketInSize > 0) {
+                        if (this.maxPacketInSize > v3) {
+                        } else {
+                            this.smallIn = ByteBuffer.allocate(Math.max(this.maxPacketInSize, this.maxPacketOutSize));
+                            this.smallIn.order(ByteOrder.LITTLE_ENDIAN);
+                            this.bigIn1 = ByteBuffer.allocate(0x4000);
+                            this.bigIn1.order(ByteOrder.LITTLE_ENDIAN);
+                            this.bigIn2 = ByteBuffer.allocate(0x4000);
+                            this.bigIn2.order(ByteOrder.LITTLE_ENDIAN);
+                            this.bigIn3 = ByteBuffer.allocate(0x4000);
+                            this.bigIn3.order(ByteOrder.LITTLE_ENDIAN);
+                            this.fullIn = ByteBuffer.allocate(this.fullInSize);
+                            this.fullIn.order(ByteOrder.LITTLE_ENDIAN);
+                            this.r1 = PtpCamera.this.connection.createInRequest();
+                            this.r2 = PtpCamera.this.connection.createInRequest();
+                            this.r3 = PtpCamera.this.connection.createInRequest();
+                            while (true) {
+                                synchronized (this) {
+                                    try {
+                                        if (this.stop) {
+                                            this.r3.close();
+                                            this.r2.close();
+                                            this.r1.close();
+                                            this.notifyWorkEnded();
+                                            return;
+                                        }
+                                    } catch (Throwable v0) {
+                                        break;
+                                    }
+
+                                    if (this.lastEventCheck + 700 < System.currentTimeMillis()) {
+                                        this.lastEventCheck = System.currentTimeMillis();
+                                        PtpCamera.this.queueEventCheck();
+                                    }
+                                    try {
+                                        v0_1 = PtpCamera.this.queue.poll(1000, TimeUnit.MILLISECONDS);
+
+                                    } catch (InterruptedException e) {
+                                        if (v0_1 == null) {
+                                            continue;
+                                        }
+
+                                        ((PtpAction) v0_1).exec(((IO) this));
+                                        continue;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    PtpCamera.this.onUsbError(String.format("usb initialization error: in size invalid %d", Integer.valueOf(this.maxPacketInSize)));
+                    return;
+                }
+            }
+
+            PtpCamera.this.onUsbError(String.format("Usb initialization error: out size invalid %d", Integer.valueOf(this.maxPacketOutSize)));
         }
     }
 
-    public boolean getPropertyEnabledState(int i) {
-        return false;
+    private static final String TAG = "PtpCamera";
+    protected boolean autoFocusSupported;
+    protected boolean bulbSupported;
+    protected boolean cameraIsCapturing;
+    private final PtpUsbConnection connection;
+    protected DeviceInfo deviceInfo;
+    protected boolean driveLensSupported;
+    protected final Handler handler;
+    protected boolean histogramSupported;
+    protected CameraListener listener;
+    protected boolean liveViewAfAreaSupported;
+    protected boolean liveViewOpen;
+    protected boolean liveViewSupported;
+    private int pictureSampleSize;
+    protected final int productId;
+    protected final Map properties;
+    private final Map propertyDescriptions;
+    protected final Set ptpInternalProperties;
+    protected final Map ptpProperties;
+    protected final Map ptpPropertyDesc;
+    protected final Map ptpToVirtualProperty;
+    protected final LinkedBlockingQueue queue;
+    protected State state;
+    private int transactionId;
+    private final int vendorId;
+    protected final Map virtualToPtpProperty;
+    private WorkerListener workerListener;
+    private final WorkerThread workerThread;
+
+    static {
     }
 
-    protected abstract boolean isBulbCurrentShutterSpeed();
-
-    protected abstract void onOperationCodesReceived(Set<Integer> set);
-
-    protected abstract void queueEventCheck();
-
-    public PtpCamera(PtpUsbConnection ptpUsbConnection, CameraListener cameraListener, WorkerListener workerListener) {
-        this.connection = ptpUsbConnection;
-        this.listener = cameraListener;
-        this.workerListener = workerListener;
+    public PtpCamera(PtpUsbConnection arg3, CameraListener arg4, WorkerListener arg5) {
+        super();
+        this.workerThread = new WorkerThread(this, null);
+        this.handler = new Handler();
+        this.queue = new LinkedBlockingQueue();
+        this.virtualToPtpProperty = new HashMap();
+        this.ptpToVirtualProperty = new HashMap();
+        this.ptpPropertyDesc = new HashMap();
+        this.ptpProperties = new HashMap();
+        this.properties = new HashMap();
+        this.propertyDescriptions = new HashMap();
+        this.ptpInternalProperties = new HashSet();
+        this.connection = arg3;
+        this.listener = arg4;
+        this.workerListener = arg5;
         this.pictureSampleSize = 2;
         this.state = State.Starting;
-        this.vendorId = ptpUsbConnection.getVendorId();
-        this.productId = ptpUsbConnection.getProductId();
+        this.vendorId = arg3.getVendorId();
+        this.productId = arg3.getProductId();
         this.queue.add(new GetDeviceInfoCommand(this));
-        openSession();
+        this.openSession();
         this.workerThread.start();
-        Log.i(TAG, String.format("Starting session for %04x %04x", new Object[]{Integer.valueOf(this.vendorId), Integer.valueOf(this.productId)}));
+        Log.i(PtpCamera.TAG, String.format("Starting session for %04x %04x", Integer.valueOf(this.vendorId), Integer.valueOf(this.productId)));
     }
 
-    protected void addPropertyMapping(int i, int i2) {
-        this.ptpToVirtualProperty.put(Integer.valueOf(i2), Integer.valueOf(i));
-        this.virtualToPtpProperty.put(Integer.valueOf(i), Integer.valueOf(i2));
+    static Map access$200(PtpCamera arg0) {
+        return arg0.propertyDescriptions;
     }
 
-    protected void addInternalProperty(int i) {
-        this.ptpInternalProperties.add(Integer.valueOf(i));
+    static PtpUsbConnection access$300(PtpCamera arg0) {
+        return arg0.connection;
     }
 
-    public void setListener(CameraListener cameraListener) {
-        this.listener = cameraListener;
+    static void access$400(PtpCamera arg0, String arg1) {
+        arg0.onUsbError(arg1);
     }
 
-    public void shutdown() {
-        this.state = State.Stoping;
-        this.workerThread.lastEventCheck = System.currentTimeMillis() + 1000000;
-        this.queue.clear();
-        if (this.liveViewOpen) {
-            setLiveView(false);
-        }
-        closeSession();
+    static String access$500() {
+        return PtpCamera.TAG;
     }
 
-    public void shutdownHard() {
-        this.state = State.Stopped;
-        synchronized (this.workerThread) {
-            this.workerThread.stop = true;
-        }
-        if (this.connection != null) {
-            this.connection.close();
-        }
+    static WorkerListener access$600(PtpCamera arg0) {
+        return arg0.workerListener;
     }
 
-    public State getState() {
-        return this.state;
+    protected void addInternalProperty(int arg2) {
+        this.ptpInternalProperties.add(Integer.valueOf(arg2));
     }
 
-    public int nextTransactionId() {
-        int i = this.transactionId;
-        this.transactionId = i + 1;
-        return i;
+    protected void addPropertyMapping(int arg4, int arg5) {
+        this.ptpToVirtualProperty.put(Integer.valueOf(arg5), Integer.valueOf(arg4));
+        this.virtualToPtpProperty.put(Integer.valueOf(arg4), Integer.valueOf(arg5));
+    }
+
+    public void capture() {
+        this.queue.add(new InitiateCaptureCommand(this));
+    }
+
+    protected void closeSession() {
+        this.queue.add(new CloseSessionCommand(this));
     }
 
     public int currentTransactionId() {
         return this.transactionId;
     }
 
-    public void resetTransactionId() {
-        this.transactionId = 0;
+    public void enqueue(Command arg3, int arg4) {
+        this.handler.postDelayed(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.state == State.Active) {
+                    PtpCamera.this.queue.add(arg3);
+                }
+            }
+        }, ((long) arg4));
+    }
+
+    public String getBiggestPropertyValue(int arg2) {
+        Object v2 = this.virtualToPtpProperty.get(Integer.valueOf(arg2));
+        if (v2 != null) {
+            return PtpPropertyHelper.getBiggestValue(((Integer) v2).intValue());
+        }
+
+        return "";
+    }
+
+    public String getDeviceInfo() {
+        String v0 = this.deviceInfo != null ? this.deviceInfo.toString() : "unknown";
+        return v0;
+    }
+
+    public String getDeviceName() {
+        String v0 = this.deviceInfo != null ? this.deviceInfo.model : "";
+        return v0;
     }
 
     public int getProductId() {
         return this.productId;
     }
 
-    public void setDeviceInfo(DeviceInfo deviceInfo) {
-        Log.i(TAG, deviceInfo.toString());
-        this.deviceInfo = deviceInfo;
-        Set hashSet = new HashSet();
-        for (int valueOf : deviceInfo.operationsSupported) {
-            hashSet.add(Integer.valueOf(valueOf));
+    public int getProperty(int i) {
+        return this.properties.containsKey(Integer.valueOf(i)) ? ((Integer) this.properties.get(Integer.valueOf(i))).intValue() : Integer.MAX_VALUE;
+
+    }
+
+    public int[] getPropertyDesc(int arg3) {
+        if (this.propertyDescriptions.containsKey(Integer.valueOf(arg3))) {
+            return (int[]) this.propertyDescriptions.get(Integer.valueOf(arg3));
         }
-        onOperationCodesReceived(hashSet);
+
+        return new int[0];
     }
 
-    public void enqueue(final Command command, int i) {
-        this.handler.postDelayed(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.state == State.Active) {
-                    PtpCamera.this.queue.add(command);
+    public boolean getPropertyEnabledState(int arg1) {
+        return false;
+    }
+
+    public int getPtpProperty(int arg2) {
+        Object v2 = this.ptpProperties.get(Integer.valueOf(arg2));
+        return v2 != null ? ((Integer) v2).intValue() : 0;
+    }
+
+    public State getState() {
+        return this.state;
+    }
+
+    public boolean isAutoFocusSupported() {
+        return this.autoFocusSupported;
+    }
+
+    protected abstract boolean isBulbCurrentShutterSpeed();
+
+    public boolean isDriveLensSupported() {
+        return this.driveLensSupported;
+    }
+
+    public boolean isHistogramSupported() {
+        return this.histogramSupported;
+    }
+
+    public boolean isLiveViewAfAreaSupported() {
+        return this.liveViewAfAreaSupported;
+    }
+
+    public boolean isLiveViewOpen() {
+        return this.liveViewOpen;
+    }
+
+    public boolean isLiveViewSupported() {
+        return this.liveViewSupported;
+    }
+
+    public boolean isSessionOpen() {
+        boolean v0 = this.state == State.Active ? true : false;
+        return v0;
+    }
+
+    public int nextTransactionId() {
+        int v0 = this.transactionId;
+        this.transactionId = v0 + 1;
+        return v0;
+    }
+
+    public void onBulbExposureTime(int arg3) {
+        if (arg3 >= 0 && arg3 <= 360000) {
+            this.handler.post(new Runnable() {
+                public void run() {
+                    if (PtpCamera.this.listener != null) {
+                        PtpCamera.this.listener.onBulbExposureTime(arg3);
+                    }
                 }
-            }
-        }, (long) i);
+            });
+        }
     }
 
-    public int getPtpProperty(int i) {
-        Integer num = (Integer) this.ptpProperties.get(Integer.valueOf(i));
-        return num != null ? num.intValue() : 0;
+    public void onDeviceBusy(PtpAction arg3, boolean arg4) {
+        Log.i(PtpCamera.TAG, "onDeviceBusy, sleeping a bit");
+        if (arg4) {
+            arg3.reset();
+            this.queue.add(arg3);
+        }
+
+        long v3 = 200;
+        try {
+            Thread.sleep(v3);
+            return;
+        } catch (InterruptedException d) {
+            return;
+        }
     }
 
-    public void onSessionOpened() {
-        this.state = State.Active;
+    public void onEventCameraCapture(boolean arg2) {
+        this.cameraIsCapturing = arg2;
+        if (this.isBulbCurrentShutterSpeed()) {
+            this.handler.post(new Runnable() {
+                public void run() {
+                    if (PtpCamera.this.listener != null) {
+                        if (PtpCamera.this.cameraIsCapturing) {
+                            PtpCamera.this.listener.onBulbStarted();
+                        } else {
+                            PtpCamera.this.listener.onBulbStopped();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    public void onEventDevicePropChanged(int i) {
+        if ((this.ptpToVirtualProperty.containsKey(Integer.valueOf(i)) || this.ptpInternalProperties.contains(Integer.valueOf(i))) && this.ptpPropertyDesc.containsKey(Integer.valueOf(i))) {
+            this.queue.add(new GetDevicePropValueCommand(this, i, ((DevicePropDesc) this.ptpPropertyDesc.get(Integer.valueOf(i))).datatype));
+        }
+    }
+
+    public void onEventObjectAdded(int arg3, int arg4) {
         this.handler.post(new Runnable() {
             public void run() {
                 if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onCameraStarted(PtpCamera.this);
+                    PtpCamera.this.listener.onObjectAdded(arg3, arg4);
                 }
             }
         });
     }
 
-    public void onSessionClosed() {
-        shutdownHard();
+    public void onFocusEnded(boolean arg3) {
         this.handler.post(new Runnable() {
             public void run() {
                 if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onCameraStopped(PtpCamera.this);
+                    PtpCamera.this.listener.onFocusEnded(arg3);
+                }
+            }
+        });
+    }
+
+    public void onFocusStarted() {
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onFocusStarted();
+                }
+            }
+        });
+    }
+
+    public void onLiveViewReceived(LiveViewData arg3) {
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onLiveViewData(arg3);
+                }
+            }
+        });
+    }
+
+    public void onLiveViewRestarted() {
+        this.liveViewOpen = true;
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onLiveViewStarted();
+                }
+            }
+        });
+    }
+
+    public void onLiveViewStarted() {
+        this.liveViewOpen = true;
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onLiveViewStarted();
+                }
+            }
+        });
+    }
+
+    public void onLiveViewStopped() {
+        this.liveViewOpen = false;
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onLiveViewStopped();
+                }
+            }
+        });
+    }
+
+    protected abstract void onOperationCodesReceived(Set<Integer> set);
+
+    public void onPictureReceived(int i, String str, Bitmap bitmap, Bitmap bitmap1) {
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onCapturedPictureReceived(i, str, bitmap, bitmap1);
                 }
             }
         });
@@ -381,6 +620,11 @@ public abstract class PtpCamera implements Camera {
         }
     }
 
+    public void onPropertyDescChanged(int arg3, DevicePropDesc arg4) {
+        this.ptpPropertyDesc.put(Integer.valueOf(arg3), arg4);
+        this.onPropertyDescChanged(arg3, arg4.description);
+    }
+
     public void onPropertyDescChanged(int i, final int[] iArr) {
         Log.d(TAG, String.format("onPropertyDescChanged %s:\n%s", new Object[]{PtpConstants.propertyToString(i), Arrays.toString(iArr)}));
         final Integer num = (Integer) this.ptpToVirtualProperty.get(Integer.valueOf(i));
@@ -394,154 +638,6 @@ public abstract class PtpCamera implements Camera {
                 }
             });
         }
-    }
-
-    public void onPropertyDescChanged(int i, DevicePropDesc devicePropDesc) {
-        this.ptpPropertyDesc.put(Integer.valueOf(i), devicePropDesc);
-        onPropertyDescChanged(i, devicePropDesc.description);
-    }
-
-    public void onLiveViewStarted() {
-        this.liveViewOpen = true;
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onLiveViewStarted();
-                }
-            }
-        });
-    }
-
-    public void onLiveViewRestarted() {
-        this.liveViewOpen = true;
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onLiveViewStarted();
-                }
-            }
-        });
-    }
-
-    public void onLiveViewStopped() {
-        this.liveViewOpen = false;
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onLiveViewStopped();
-                }
-            }
-        });
-    }
-
-    public void onLiveViewReceived(final LiveViewData liveViewData) {
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onLiveViewData(liveViewData);
-                }
-            }
-        });
-    }
-
-    public void onPictureReceived(int i, String str, Bitmap bitmap, Bitmap bitmap2) {
-        final int i2 = i;
-        final String str2 = str;
-        final Bitmap bitmap3 = bitmap;
-        final Bitmap bitmap4 = bitmap2;
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onCapturedPictureReceived(i2, str2, bitmap3, bitmap4);
-                }
-            }
-        });
-    }
-
-    public void onEventCameraCapture(boolean z) {
-        this.cameraIsCapturing = z;
-        if (isBulbCurrentShutterSpeed()) {
-            this.handler.post(new Runnable() {
-                public void run() {
-                    if (PtpCamera.this.listener == null) {
-                        return;
-                    }
-                    if (PtpCamera.this.cameraIsCapturing) {
-                        PtpCamera.this.listener.onBulbStarted();
-                    } else {
-                        PtpCamera.this.listener.onBulbStopped();
-                    }
-                }
-            });
-        }
-    }
-
-    public void onEventDevicePropChanged(int i) {
-        if ((this.ptpToVirtualProperty.containsKey(Integer.valueOf(i)) || this.ptpInternalProperties.contains(Integer.valueOf(i))) && this.ptpPropertyDesc.containsKey(Integer.valueOf(i))) {
-            this.queue.add(new GetDevicePropValueCommand(this, i, ((DevicePropDesc) this.ptpPropertyDesc.get(Integer.valueOf(i))).datatype));
-        }
-    }
-
-    public void onEventObjectAdded(final int i, final int i2) {
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onObjectAdded(i, i2);
-                }
-            }
-        });
-    }
-
-    public void onBulbExposureTime(final int i) {
-        if (i >= 0 && i <= 360000) {
-            this.handler.post(new Runnable() {
-                public void run() {
-                    if (PtpCamera.this.listener != null) {
-                        PtpCamera.this.listener.onBulbExposureTime(i);
-                    }
-                }
-            });
-        }
-    }
-
-    public void onFocusStarted() {
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onFocusStarted();
-                }
-            }
-        });
-    }
-
-    public void onFocusEnded(final boolean z) {
-        this.handler.post(new Runnable() {
-            public void run() {
-                if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onFocusEnded(z);
-                }
-            }
-        });
-    }
-
-    public void onDeviceBusy(PtpAction ptpAction, boolean z) {
-        Log.i(TAG, "onDeviceBusy, sleeping a bit");
-        if (z) {
-            ptpAction.reset();
-            this.queue.add(ptpAction);
-        }
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException unused) {
-        }
-    }
-
-    public void onPtpWarning(String str) {
-        String str2 = TAG;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("onPtpWarning: ");
-        stringBuilder.append(str);
-        Log.i(str2, stringBuilder.toString());
     }
 
     public void onPtpError(final String str) {
@@ -565,19 +661,43 @@ public abstract class PtpCamera implements Camera {
         });
     }
 
-    private void onUsbError(final String str) {
-        String str2 = TAG;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("onUsbError: ");
-        stringBuilder.append(str);
-        Log.e(str2, stringBuilder.toString());
+    public void onPtpWarning(String arg4) {
+        String v0 = PtpCamera.TAG;
+        Log.i(v0, "onPtpWarning: " + arg4);
+    }
+
+    public void onSessionClosed() {
+        this.shutdownHard();
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onCameraStopped(PtpCamera.this);
+                }
+            }
+        });
+    }
+
+    public void onSessionOpened() {
+        this.state = State.Active;
+        this.handler.post(new Runnable() {
+            public void run() {
+                if (PtpCamera.this.listener != null) {
+                    PtpCamera.this.listener.onCameraStarted(PtpCamera.this);
+                }
+            }
+        });
+    }
+
+    private void onUsbError(String arg4) {
+        String v0 = PtpCamera.TAG;
+        Log.e(v0, "onUsbError: " + arg4);
         this.queue.clear();
-        shutdownHard();
+        this.shutdownHard();
         this.state = State.Error;
         this.handler.post(new Runnable() {
             public void run() {
                 if (PtpCamera.this.listener != null) {
-                    PtpCamera.this.listener.onError(String.format("Error in USB communication: %s", new Object[]{str}));
+                    PtpCamera.this.listener.onError(String.format("Error in USB communication: %s", arg4));
                 }
             }
         });
@@ -587,31 +707,79 @@ public abstract class PtpCamera implements Camera {
         this.queue.add(new OpenSessionCommand(this));
     }
 
-    protected void closeSession() {
-        this.queue.add(new CloseSessionCommand(this));
-    }
+    public Integer propertyToIcon(int arg2, int arg3) {
+        Object v2 = this.virtualToPtpProperty.get(Integer.valueOf(arg2));
+        Integer v0 = null;
+        if (v2 != null) {
+            Integer v2_1 = PtpPropertyHelper.mapToDrawable(((Integer) v2).intValue(), arg3);
+            if (v2_1 != null) {
+            } else {
+                v2_1 = v0;
+            }
 
-    public void setWorkerListener(WorkerListener workerListener) {
-        this.workerListener = workerListener;
-    }
-
-    public String getDeviceName() {
-        return this.deviceInfo != null ? this.deviceInfo.model : "";
-    }
-
-    public boolean isSessionOpen() {
-        return this.state == State.Active;
-    }
-
-    public int getProperty(int i) {
-        return this.properties.containsKey(Integer.valueOf(i)) ? ((Integer) this.properties.get(Integer.valueOf(i))).intValue() : Integer.MAX_VALUE;
-    }
-
-    public int[] getPropertyDesc(int i) {
-        if (this.propertyDescriptions.containsKey(Integer.valueOf(i))) {
-            return (int[]) this.propertyDescriptions.get(Integer.valueOf(i));
+            return v2_1;
         }
-        return new int[0];
+
+        return v0;
+    }
+
+    public String propertyToString(int arg2, int arg3) {
+        Object v2 = this.virtualToPtpProperty.get(Integer.valueOf(arg2));
+        if (v2 != null) {
+            String v2_1 = PtpPropertyHelper.mapToString(this.productId, ((Integer) v2).intValue(), arg3);
+            if (v2_1 != null) {
+            } else {
+                v2_1 = "?";
+            }
+
+            return v2_1;
+        }
+
+        return "";
+    }
+
+    protected abstract void queueEventCheck();
+
+    public void resetTransactionId() {
+        this.transactionId = 0;
+    }
+
+    public void retrieveImage(RetrieveImageListener arg4, int arg5) {
+        this.queue.add(new RetrieveImageAction(this, arg4, arg5, this.pictureSampleSize));
+    }
+
+    public void retrieveImageHandles(StorageInfoListener arg3, int arg4, int arg5) {
+        this.queue.add(new GetObjectHandlesCommand(this, arg3, arg4, arg5));
+    }
+
+    public void retrieveImageInfo(RetrieveImageInfoListener arg3, int arg4) {
+        this.queue.add(new RetrieveImageInfoAction(this, arg3, arg4));
+    }
+
+    public void retrievePicture(int arg4) {
+        this.queue.add(new RetrievePictureAction(this, arg4, this.pictureSampleSize));
+    }
+
+    public void retrieveStorages(StorageInfoListener arg3) {
+        this.queue.add(new GetStorageInfosAction(this, arg3));
+    }
+
+    public void setCapturedPictureSampleSize(int arg1) {
+        this.pictureSampleSize = arg1;
+    }
+
+    public void setDeviceInfo(DeviceInfo arg4) {
+        Log.i(PtpCamera.TAG, arg4.toString());
+        this.deviceInfo = arg4;
+        HashSet hashSet = new HashSet();
+        for (int valueOf : deviceInfo.operationsSupported) {
+            hashSet.add(Integer.valueOf(valueOf));
+        }
+        onOperationCodesReceived(hashSet);
+    }
+
+    public void setListener(CameraListener arg1) {
+        this.listener = arg1;
     }
 
     public void setProperty(int i, int i2) {
@@ -621,97 +789,41 @@ public abstract class PtpCamera implements Camera {
         }
     }
 
-    public String propertyToString(int i, int i2) {
-        Integer num = (Integer) this.virtualToPtpProperty.get(Integer.valueOf(i));
-        if (num == null) {
-            return "";
+    public void setWorkerListener(WorkerListener arg1) {
+        this.workerListener = arg1;
+    }
+
+    public void shutdown() {
+        this.state = State.Stoping;
+        this.workerThread.lastEventCheck = System.currentTimeMillis() + 1000000;
+        this.queue.clear();
+        if (this.liveViewOpen) {
+            this.setLiveView(false);
         }
-        String mapToString = PtpPropertyHelper.mapToString(this.productId, num.intValue(), i2);
-        if (mapToString == null) {
-            mapToString = Operation.EMPTY_PARAM;
+
+        this.closeSession();
+    }
+
+    public void shutdownHard() {
+        this.state = State.Stopped;
+        synchronized (this.workerThread) {
+            this.workerThread.stop = true;
         }
-        return mapToString;
-    }
 
-    public Integer propertyToIcon(int i, int i2) {
-        Integer num = (Integer) this.virtualToPtpProperty.get(Integer.valueOf(i));
-        if (num == null) {
-            return null;
+        if (this.connection != null) {
+            this.connection.close();
         }
-        num = PtpPropertyHelper.mapToDrawable(num.intValue(), i2);
-        if (num == null) {
-            num = null;
-        }
-        return num;
     }
 
-    public String getBiggestPropertyValue(int i) {
-        Integer num = (Integer) this.virtualToPtpProperty.get(Integer.valueOf(i));
-        return num != null ? PtpPropertyHelper.getBiggestValue(num.intValue()) : "";
-    }
-
-    public void capture() {
-        this.queue.add(new InitiateCaptureCommand(this));
-    }
-
-    public boolean isAutoFocusSupported() {
-        return this.autoFocusSupported;
-    }
-
-    public boolean isLiveViewSupported() {
-        return this.liveViewSupported;
-    }
-
-    public boolean isLiveViewAfAreaSupported() {
-        return this.liveViewAfAreaSupported;
-    }
-
-    public boolean isHistogramSupported() {
-        return this.histogramSupported;
-    }
-
-    public boolean isLiveViewOpen() {
-        return this.liveViewOpen;
-    }
-
-    public boolean isDriveLensSupported() {
-        return this.driveLensSupported;
-    }
-
-    public String getDeviceInfo() {
-        return this.deviceInfo != null ? this.deviceInfo.toString() : EnvironmentCompat.MEDIA_UNKNOWN;
-    }
-
-    public void writeDebugInfo(File file) {
+    public void writeDebugInfo(File arg2) {
         try {
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.append(this.deviceInfo.toString());
-            fileWriter.close();
-        } catch (IOException unused) {
+            FileWriter v0 = new FileWriter(arg2);
+            v0.append(this.deviceInfo.toString());
+            v0.close();
+            return;
+        } catch (IOException e) {
+            return;
         }
-    }
-
-    public void retrievePicture(int i) {
-        this.queue.add(new RetrievePictureAction(this, i, this.pictureSampleSize));
-    }
-
-    public void retrieveStorages(StorageInfoListener storageInfoListener) {
-        this.queue.add(new GetStorageInfosAction(this, storageInfoListener));
-    }
-
-    public void retrieveImageHandles(StorageInfoListener storageInfoListener, int i, int i2) {
-        this.queue.add(new GetObjectHandlesCommand(this, storageInfoListener, i, i2));
-    }
-
-    public void retrieveImageInfo(RetrieveImageInfoListener retrieveImageInfoListener, int i) {
-        this.queue.add(new RetrieveImageInfoAction(this, retrieveImageInfoListener, i));
-    }
-
-    public void retrieveImage(RetrieveImageListener retrieveImageListener, int i) {
-        this.queue.add(new RetrieveImageAction(this, retrieveImageListener, i, this.pictureSampleSize));
-    }
-
-    public void setCapturedPictureSampleSize(int i) {
-        this.pictureSampleSize = i;
     }
 }
+

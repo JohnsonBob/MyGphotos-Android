@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import io.gphotos.gin.MainActivity;
-import io.gphotos.gin.R;
+import io.gphotos.gins.R;
 import io.gphotos.gin.api.GphotoApi;
 import io.gphotos.gin.api.GphotoClient;
 import io.gphotos.gin.framework.BaseCompatActivity;
@@ -42,7 +42,7 @@ public class SplashActivity extends BaseCompatActivity {
 
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        setContentView((int) R.layout.activity_splash);
+        setContentView(R.layout.activity_splash);
         ButterKnife.bind((Activity) this);
         if (AccountManager.getInstance().isLogin()) {
             new Handler().postDelayed(new Runnable() {
