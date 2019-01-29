@@ -1,6 +1,10 @@
 package io.gphotos.gin.Database;
 
 import android.util.Log;
+
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.config.FlowManager;
 import com.raizlabs.android.dbflow.sql.language.Select;
 import com.raizlabs.android.dbflow.sql.language.property.IProperty;
@@ -11,28 +15,53 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+@Table(database = GinDatabase.class)
 public class ImageModel extends BaseModel {
     private static final String TAG = "ImageModel";
-    public int compressedSize;
-    public long dateCreated;
-    public String filePath;
-    public int format;
+
+    @Column
+    @PrimaryKey(autoincrement = true)//ID自增
     public long id;
+
+    @Column
+    public int compressedSize;
+    @Column
+    public long dateCreated;
+    @Column
+    public String filePath;
+    @Column
+    public int format;
+    @Column
     public int imagePixDepth;
+    @Column
     public int imagePixHeight;
+    @Column
     public int imagePixWidth;
+    @Column
     public boolean isUploaded;
+    @Column
     public String keywords;
+    @Column
     public String name;
+    @Column
     public int objectHandle;
+    @Column
     public int parent;
+    @Column
     public int sequenceNumber;
+    @Column
     public int storageId;
+    @Column
     public int thumbCompressedSize;
+    @Column
     public int thumbFormat;
+    @Column
     public int thumbPixHeight;
+    @Column
     public int thumbPixWidth;
+    @Column
     public String thumbnailPath;
+    @Column
     public int uploadStatus;
 
     public void log() {

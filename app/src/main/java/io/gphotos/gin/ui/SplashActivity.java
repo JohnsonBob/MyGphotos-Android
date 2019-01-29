@@ -43,7 +43,7 @@ public class SplashActivity extends BaseCompatActivity {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_splash);
-        ButterKnife.bind((Activity) this);
+        ButterKnife.bind( this);
         if (AccountManager.getInstance().isLogin()) {
             new Handler().postDelayed(new Runnable() {
                 public void run() {
@@ -61,7 +61,7 @@ public class SplashActivity extends BaseCompatActivity {
         this.btnLogin2.dispose();
     }
 
-    @OnEditorAction({R.id.etCode})
+    @OnEditorAction(R.id.etCode)
     public boolean onEditorAction(int i) {
         if (i != 6) {
             return false;

@@ -88,7 +88,7 @@ public class SettingFragment extends DialogFragment {
         getActivity().startService(intent);
     }
 
-    @OnClick({2131230756})
+    @OnClick(R.id.btnClearDB)
     public void btnClear() {
         Builder builder = new Builder(getActivity());
         builder.setTitle((CharSequence) "危险操作");
@@ -109,7 +109,7 @@ public class SettingFragment extends DialogFragment {
         builder.show();
     }
 
-    @OnClick({2131230757})
+    @OnClick(R.id.btnClose)
     public void btnClose() {
         dismiss();
     }
